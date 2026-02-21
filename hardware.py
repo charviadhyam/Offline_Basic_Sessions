@@ -4,14 +4,19 @@ from machine import Pin, PWM
 import time
 
 # --- Pin Definitions ---
-AIN1 = Pin(25, Pin.OUT)
-AIN2 = Pin(33, Pin.OUT)
-BIN1 = Pin(27, Pin.OUT)
-BIN2 = Pin(14, Pin.OUT)
-PWMA = Pin(32, Pin.OUT)
-PWMB = Pin(12, Pin.OUT)
-STBY = Pin(26, Pin.OUT)
+AIN1 = Pin(26, Pin.OUT)
+AIN2 = Pin(25, Pin.OUT)
+PWMA = PWM(Pin(33), freq=1000)
 
+BIN1 = Pin(14, Pin.OUT)
+BIN2 = Pin(12, Pin.OUT)
+PWMB = PWM(Pin(13), freq=1000)
+
+STBY = Pin(27, Pin.OUT)
+
+# --- Network & UDP Config ---
+#SSID = "NAME_OF_AP"
+#PASSWORD = "PASSWORD_AP"
 UDP_PORT = 4210
 
 def setup_sta():
@@ -29,29 +34,39 @@ def setup_sta():
     return wlan
 
 # --- Motor Control Functions ---
-PWMA.on()
-PWMB.on()
+PWMA.duty(0)
+PWMB.duty(0)
 STBY.on()
 
-def move_left():
+def move_left(spd):
     AIN1.off(); AIN2.on()
     BIN1.on(); BIN2.off()
+    PWMA.duty(spd)
+    PWMB.duty(spd)
 
-def move_right():
+def move_right(spd):
     AIN1.on(); AIN2.off()
     BIN1.off(); BIN2.on()
+    PWMA.duty(spd)
+    PWMB.duty(spd)
 
-def move_forward():
+def move_forward(spd):
     AIN1.on(); AIN2.off()
     BIN1.on(); BIN2.off()
+    PWMA.duty(spd)
+    PWMB.duty(spd)
 
-def move_back():
+def move_back(spd):
     AIN1.off(); AIN2.on()
     BIN1.off(); BIN2.on()
+    PWMA.duty(spd)
+    PWMB.duty(spd)
 
 def stop():
     AIN1.off(); AIN2.off()
     BIN1.off(); BIN2.off()
+    PWMA.duty(0)
+    PWMB.duty(0)
 
 # --- Main Initialization & Loop ---
 def main():
