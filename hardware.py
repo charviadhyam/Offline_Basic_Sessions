@@ -4,19 +4,14 @@ from machine import Pin, PWM
 import time
 
 # --- Pin Definitions ---
-AIN1 = Pin(26, Pin.OUT)
-AIN2 = Pin(25, Pin.OUT)
-PWMA = PWM(Pin(33), freq=1000)
+AIN1 = Pin(25, Pin.OUT)
+AIN2 = Pin(33, Pin.OUT)
+BIN1 = Pin(27, Pin.OUT)
+BIN2 = Pin(14, Pin.OUT)
+PWMA = Pin(32, Pin.OUT)
+PWMB = Pin(12, Pin.OUT)
+STBY = Pin(26, Pin.OUT)
 
-BIN1 = Pin(14, Pin.OUT)
-BIN2 = Pin(12, Pin.OUT)
-PWMB = PWM(Pin(13), freq=1000)
-
-STDBY = Pin(27, Pin.OUT)
-
-# --- Network & UDP Config ---
-#SSID = "NAME_OF_AP"
-#PASSWORD = "PASSWORD_AP"
 UDP_PORT = 4210
 
 def setup_sta():
@@ -34,49 +29,29 @@ def setup_sta():
     return wlan
 
 # --- Motor Control Functions ---
-def run_motor(motor, spd, direction):
-    STDBY.value(1)  # Take motor driver out of standby
-    
-    dir_pin1 = 0    # LOW
-    dir_pin2 = 1    # HIGH
+PWMA.on()
+PWMB.on()
+STBY.on()
 
-    if direction == 1:
-        dir_pin1 = 1
-        dir_pin2 = 0
+def move_left():
+    AIN1.off(); AIN2.on()
+    BIN1.on(); BIN2.off()
 
-    # MicroPython uses 16-bit resolution for PWM (0 - 65535)
-    # We map the 0-255 speed from your C++ code to 0-65535
-    duty_cycle = int((spd / 255.0) * 65535)
+def move_right():
+    AIN1.on(); AIN2.off()
+    BIN1.off(); BIN2.on()
 
-    if motor == 0:  # Motor A
-        AIN1.value(dir_pin1)
-        AIN2.value(dir_pin2)
-        PWMA.duty_u16(duty_cycle)
-    else:           # Motor B
-        BIN1.value(dir_pin1)
-        BIN2.value(dir_pin2)
-        PWMB.duty_u16(duty_cycle)
+def move_forward():
+    AIN1.on(); AIN2.off()
+    BIN1.on(); BIN2.off()
 
-def move_left(spd):
-    run_motor(0, spd, 0)
-    run_motor(1, spd, 1)
-
-def move_right(spd):
-    run_motor(0, spd, 1)
-    run_motor(1, spd, 0)
-
-def move_forward(spd):
-    run_motor(0, spd, 0)
-    run_motor(1, spd, 0)
-
-def move_back(spd):
-    run_motor(0, spd, 1)
-    run_motor(1, spd, 1)
+def move_back():
+    AIN1.off(); AIN2.on()
+    BIN1.off(); BIN2.on()
 
 def stop():
-    STDBY.value(0)  # Put motor driver in standby
-    PWMA.duty_u16(0)
-    PWMB.duty_u16(0)
+    AIN1.off(); AIN2.off()
+    BIN1.off(); BIN2.off()
 
 # --- Main Initialization & Loop ---
 def main():
